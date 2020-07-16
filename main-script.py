@@ -24,6 +24,16 @@ def getUserResponse(prompt):
     return userInput
 
 
+def filterData(originalData, startFrom):
+    dequedData = deque(originalData)
+    originalLength = len(originalData)
+    for i in range(originalLength):
+        objectId = dequedData.popleft()['_id']['$oid']
+        if objectId.lower() == startFrom.lower():
+            break
+    return list(dequedData)
+
+
 def loadDataFromMongo(collection, username, password):
     MONGO_HOST = "eltanin.dept.lehigh.edu"
     MONGO_DB = "covid-19_messaging"
@@ -124,9 +134,10 @@ def main():
         'Since you are continuing what do you want your output file name to be?(Include ".json" extension in your input): ')
     with open(f'{jsonFileName}', 'w', encoding='utf-8') as fileToWrite:
         fileToWrite.write('[')
+    data = data if startFrom.lower() == 'start' else filterData(data, startFrom)
     runSelenium(data)
     driver.quit()
-    with open('translated_json.json', 'a', encoding='utf-8') as fileToWrite:
+    with open(f'{jsonFileName}', 'a', encoding='utf-8') as fileToWrite:
         fileToWrite.write(']')
 
 
