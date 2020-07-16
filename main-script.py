@@ -5,6 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from sshtunnel import SSHTunnelForwarder
 from bson.json_util import dumps
+from collections import deque
 import pymongo
 import json
 import logging
@@ -16,6 +17,11 @@ options.headless = True
 chunkLength = 5000
 driver = webdriver.Chrome(CHROMEDRIVER_PATH, options=options)
 masterJsonList = []
+
+
+def getUserResponse(prompt):
+    userInput = input(prompt)
+    return userInput
 
 
 def loadDataFromMongo(collection, username, password):
@@ -109,9 +115,15 @@ def main():
     userCollection = sys.argv[1]
     userName = sys.argv[2]
     userPassword = sys.argv[3]
-    with open('translated_json.json', 'w', encoding='utf-8') as fileToWrite:
-        fileToWrite.write('[')
     data = loadDataFromMongo(userCollection, userName, userPassword)
+    startFrom = getUserResponse(
+        'Enter the objectId of the last document that was translated(Type "start" if you want to start from the beginning): ')
+    if startFrom.lower() != 'start':
+        print('Note that a new file will be created and written to from the beginning')
+    jsonFileName = 'translated_json.json' if startFrom.lower() == 'start' else getUserResponse(
+        'Since you are continuing what do you want your output file name to be?(Include ".json" extension in your input): ')
+    with open(f'{jsonFileName}', 'w', encoding='utf-8') as fileToWrite:
+        fileToWrite.write('[')
     runSelenium(data)
     driver.quit()
     with open('translated_json.json', 'a', encoding='utf-8') as fileToWrite:
