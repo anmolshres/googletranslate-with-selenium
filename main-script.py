@@ -65,7 +65,7 @@ def loadDataFromMongo(collection, username, password):
         server.stop()
 
 
-def runSelenium(textData):
+def runSelenium(textData, fileName):
     driver.get('https://translate.google.com/')
     inputBox = driver.find_element_by_id('source')
     for document in textData:
@@ -84,7 +84,7 @@ def runSelenium(textData):
                 "text": translatedText
             }
             try:
-                with open('translated_json.json', 'a', encoding='utf-8') as fileToWrite:
+                with open(f'{fileName}', 'a', encoding='utf-8') as fileToWrite:
                     json.dump(newJson, fileToWrite,
                               ensure_ascii=False, indent=4)
                     fileToWrite.write(',')
@@ -135,7 +135,7 @@ def main():
     with open(f'{jsonFileName}', 'w', encoding='utf-8') as fileToWrite:
         fileToWrite.write('[')
     data = data if startFrom.lower() == 'start' else filterData(data, startFrom)
-    runSelenium(data)
+    runSelenium(data, jsonFileName)
     driver.quit()
     with open(f'{jsonFileName}', 'a', encoding='utf-8') as fileToWrite:
         fileToWrite.write(']')
